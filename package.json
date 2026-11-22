@@ -1,0 +1,21 @@
+{
+  "name": "mc-server-launcher",
+  "version": "1.1.0",
+  "description": "Minecraft sunucusu kurma ve yönetme uygulaması",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.mcserverlauncher.app",
+    "productName": "MC Server Launcher",
+    "files": ["main.js", "preload.js", "index.html", "renderer.js", "style.css"],
+    "win": { "target": "portable" },
+    "portable": { "artifactName": "MC-Server-Launcher.exe" }
+  }
+}

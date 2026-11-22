@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data: https://cdn.modrinth.com">
+<title>MC Server Launcher</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>⛏ MC Server Launcher</h1>
+  <span id="info" class="badge">—</span>
+  <span id="java" class="badge">Java…</span>
+  <span id="state" class="badge off">Kapalı</span>
+  <button id="start" class="primary">▶ Başlat</button>
+  <button id="stop" class="danger">■ Durdur</button>
+</header>
+<div class="bar"><div id="bar"></div></div>
+<div class="layout">
+  <nav>
+    <button class="tab active" data-tab="server">🖥 Sunucu</button>
+    <button class="tab" data-tab="console">📟 Konsol</button>
+    <button class="tab" data-tab="mods">🧩 Mod &amp; Eklenti</button>
+    <button class="tab" data-tab="settings">⚙ Ayarlar</button>
+  </nav>
+
+  <main>
+    <section id="tab-server" class="panel">
+      <h2>Sunucu klasörü</h2>
+      <div class="row"><input id="dir" readonly><button id="pick">Seç</button><button id="open">Aç</button></div>
+      <h2>Sunucu türü ve sürüm</h2>
+      <div class="grid">
+        <div><label>Tür</label>
+          <select id="type">
+            <option value="vanilla">Vanilla (modsuz)</option>
+            <option value="paper">Paper (eklenti / plugin)</option>
+            <option value="purpur">Purpur (eklenti / plugin)</option>
+            <option value="fabric">Fabric (mod)</option>
+            <option value="forge">Forge (mod) — deneysel</option>
+            <option value="neoforge">NeoForge (mod) — deneysel</option>
+          </select></div>
+        <div><label>Minecraft sürümü</label><select id="version"></select></div>
+      </div>
+      <p class="hint" id="typeHint"></p>
+      <button id="download" class="primary wide">⬇ Sunucuyu Kur</button>
+      <label class="check"><input type="checkbox" id="eula"> <a href="https://aka.ms/MinecraftEULA" target="_blank">Minecraft EULA</a>'yı kabul ediyorum</label>
+    </section>
+
+    <section id="tab-console" class="panel console hidden">
+      <pre id="log"></pre>
+      <div class="row"><input id="cmd" placeholder="Komut yaz (örn: op OyuncuAdi) ve Enter'a bas"><button id="send">Gönder</button></div>
+    </section>
+
+    <section id="tab-mods" class="panel hidden">
+      <p class="hint" id="modInfo"></p>
+      <div class="row">
+        <input id="q" placeholder="Modrinth'te ara (boş bırak = popülerler)"><button id="search" class="primary">Ara</button>
+      </div>
+      <div class="row"><button id="addFiles">📁 Bilgisayardan .jar ekle</button><button id="openMods">Klasörü aç</button></div>
+      <h2>Arama sonuçları</h2>
+      <div id="results" class="list"></div>
+      <h2>Kurulu olanlar</h2>
+      <div id="installed" class="list"></div>
+    </section>
+
+    <section id="tab-settings" class="panel hidden">
+      <div class="grid">
+        <div><label>RAM (MB)</label><input id="ram" type="number" value="2048" min="512" step="512"></div>
+        <div><label>Port</label><input id="port" type="number" value="25565"></div>
+        <div><label>Maks. oyuncu</label><input id="maxPlayers" type="number" value="10"></div>
+        <div><label>Oyun modu</label>
+          <select id="gamemode"><option>survival</option><option>creative</option><option>adventure</option><option>spectator</option></select></div>
+        <div><label>Zorluk</label>
+          <select id="difficulty"><option>peaceful</option><option>easy</option><option selected>normal</option><option>hard</option></select></div>
+        <div><label>MOTD</label><input id="motd" value="Benim Sunucum"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="onlineMode" checked> Online mod (kapatırsan korsan hesaplar da girebilir)</label>
+    </section>
+  </main>
+</div>
+<script src="renderer.js"></script>
+</body>
+</html>
