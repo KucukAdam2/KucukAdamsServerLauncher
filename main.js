@@ -1,4 +1,5 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, clipboard } = require('electron');
+const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const { spawn, execFile } = require('child_process');
@@ -243,6 +244,30 @@ ipcMain.handle('open-mods', (_, dir) => {
   shell.openPath(f);
 });
 
+/* ---------- adres / IP ---------- */
+ipcMain.handle('net-info', async () => {
+  const local = [];
+  const ifs = os.networkInterfaces();
+  for (const name of Object.keys(ifs)) for (const i of ifs[name]) if (i.family === 'IPv4' && !i.internal) local.push({ name, address: i.address });
+  let pub = null;
+  try { pub = (await getJson('https://api.ipify.org?format=json')).ip; } catch {}
+  return { local, pub };
+});
+
+async function duckUpdate(sub, token) {
+  try {
+    sub = String(sub || '').trim().toLowerCase().replace(/\.duckdns\.org$/, '');
+    if (!/^[a-z0-9-]{1,63}$/.test(sub)) throw new Error('İsim sadece harf, rakam ve - içerebilir.');
+    if (!token) throw new Error('DuckDNS token boş.');
+    const r = await fetch(`https://www.duckdns.org/update?domains=${enc(sub)}&token=${enc(String(token).trim())}&ip=`);
+    const t = (await r.text()).trim();
+    if (t !== 'OK') throw new Error('DuckDNS kabul etmedi: isim veya token yanlış.');
+    return { ok: true, host: sub + '.duckdns.org' };
+  } catch (e) { return { ok: false, error: String(e.message || e) }; }
+}
+ipcMain.handle('duckdns', (_, { sub, token }) => duckUpdate(sub, token));
+ipcMain.handle('copy', (_, text) => { clipboard.writeText(String(text)); });
+
 /* ---------- sunucuyu çalıştır ---------- */
 function writeProps(dir, props) {
   const file = path.join(dir, 'server.properties');
@@ -276,10 +301,11 @@ ipcMain.handle('start', (_, c) => {
     fs.writeFileSync(path.join(c.dir, 'eula.txt'), 'eula=true\n');
     writeProps(c.dir, {
       'server-port': c.port, 'max-players': c.maxPlayers, motd: c.motd,
-      gamemode: c.gamemode, difficulty: c.difficulty, 'online-mode': c.onlineMode
+      gamemode: c.gamemode, difficulty: c.difficulty, 'online-mode': c.onlineMode, 'server-ip': c.serverIp || ''
     });
     server = spawn('java', args, { cwd: c.dir });
   } catch (e) { server = null; return { ok: false, error: String(e.message || e) }; }
+  if (c.duckSub && c.duckToken) duckUpdate(c.duckSub, c.duckToken).then((r) => send('log', r.ok ? `[DuckDNS] ${r.host} güncellendi\n` : `[DuckDNS] ${r.error}\n`));
   server.stdout.on('data', (d) => send('log', d.toString()));
   server.stderr.on('data', (d) => send('log', d.toString()));
   server.on('error', (e) => { send('log', `[HATA] ${e.message} (Java kurulu mu?)\n`); server = null; send('status', 'stopped'); });

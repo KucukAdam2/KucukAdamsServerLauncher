@@ -21,6 +21,7 @@
     <button class="tab active" data-tab="server">🖥 Sunucu</button>
     <button class="tab" data-tab="console">📟 Konsol</button>
     <button class="tab" data-tab="mods">🧩 Mod &amp; Eklenti</button>
+    <button class="tab" data-tab="address">🌐 Adres</button>
     <button class="tab" data-tab="settings">⚙ Ayarlar</button>
   </nav>
 
@@ -61,6 +62,28 @@
       <div id="results" class="list"></div>
       <h2>Kurulu olanlar</h2>
       <div id="installed" class="list"></div>
+    </section>
+
+    <section id="tab-address" class="panel hidden">
+      <h2>Arkadaşlarına vereceğin adres</h2>
+      <div class="item"><div class="txt"><div class="t" id="addr">—</div><div class="d">Port 25565'ten farklıysa adrese otomatik eklenir. Kendin girerken: localhost</div></div><button id="copyAddr">Kopyala</button></div>
+
+      <h2>Kendi adresini seç (DuckDNS, ücretsiz)</h2>
+      <p class="hint">1) duckdns.org'a gir, Google/GitHub ile giriş yap. 2) Sayfanın üstündeki <b>token</b>'ı kopyala. 3) Aşağıya istediğin ismi ve token'ı yaz. Sunucuyu her başlattığında adres otomatik güncellenir.</p>
+      <div class="grid">
+        <div><label>İstediğin isim</label><input id="duckSub" placeholder="kucukadam"></div>
+        <div><label>DuckDNS token</label><input id="duckToken" type="password" placeholder="xxxxxxxx-xxxx-…"></div>
+      </div>
+      <button id="duckBtn" class="primary wide">Adresi Kaydet / Güncelle</button>
+      <p class="hint" id="duckMsg"></p>
+
+      <h2>IP bilgileri</h2>
+      <p class="hint">Genel IP'n (internetten görünen): <b id="pubIp">…</b></p>
+      <div id="localIps" class="list"></div>
+      <label>Sunucunun bağlanacağı IP (server-ip)</label>
+      <select id="serverIp"></select>
+      <p class="hint">Normalde "Hepsi" kalmalı. Başka seçersen sunucu sadece o ağ kartından erişilebilir olur. Yanlış seçersen sunucu açılmaz.</p>
+      <p class="hint">Not: Arkadaşların internetten girecekse modemde 25565 portunu bilgisayarına yönlendirmen gerekir.</p>
     </section>
 
     <section id="tab-settings" class="panel hidden">

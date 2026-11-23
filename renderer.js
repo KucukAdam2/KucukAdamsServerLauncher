@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const fields = ['ram', 'port', 'maxPlayers', 'gamemode', 'difficulty', 'motd', 'type'];
+const fields = ['ram', 'port', 'maxPlayers', 'gamemode', 'difficulty', 'motd', 'type', 'duckSub', 'duckToken', 'serverIp'];
 const saved = JSON.parse(localStorage.getItem('cfg') || '{}');
 const HINTS = {
   vanilla: 'Saf Minecraft. Mod veya eklenti desteklemez.',
@@ -30,7 +30,7 @@ function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.
 document.querySelectorAll('.tab').forEach((b) => {
   b.onclick = () => {
     document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('active', x === b));
-    ['server', 'console', 'mods', 'settings'].forEach((t) => $('tab-' + t).classList.toggle('hidden', t !== b.dataset.tab));
+    ['server', 'console', 'mods', 'address', 'settings'].forEach((t) => $('tab-' + t).classList.toggle('hidden', t !== b.dataset.tab));
     if (b.dataset.tab === 'mods') refreshMods();
   };
 });
@@ -53,9 +53,45 @@ async function refreshInfo() {
   return m;
 }
 
+async function loadNet() {
+  const n = await api.netInfo();
+  const sel = $('serverIp');
+  const cur = sel.value;
+  sel.innerHTML = '';
+  const add = (v, t) => { const o = el('option', '', t); o.value = v; sel.appendChild(o); };
+  add('', 'Hepsi (önerilen)');
+  n.local.forEach((l) => add(l.address, `${l.address} (${l.name})`));
+  sel.value = cur;
+  if (sel.selectedIndex < 0) sel.value = '';
+  const box = $('localIps'); box.innerHTML = '';
+  n.local.forEach((l) => box.appendChild(el('p', 'hint', `Yerel IP (aynı Wi-Fi): ${l.address}  —  ${l.name}`)));
+  $('pubIp').textContent = n.pub || 'Alınamadı (internet?)';
+  window.pubIp = n.pub;
+  updateAddr();
+}
+function updateAddr() {
+  const sub = $('duckSub').value.trim().toLowerCase().replace(/\.duckdns\.org$/, '');
+  const host = sub ? `${sub}.duckdns.org` : (window.pubIp || 'genel-ip');
+  const port = $('port').value;
+  $('addr').textContent = host + (port && port !== '25565' ? ':' + port : '');
+}
+$('duckSub').oninput = () => { save(); updateAddr(); };
+$('duckToken').oninput = save;
+$('serverIp').onchange = save;
+$('port').oninput = () => { save(); updateAddr(); };
+$('copyAddr').onclick = () => api.copy($('addr').textContent);
+$('duckBtn').onclick = async () => {
+  $('duckMsg').textContent = 'Güncelleniyor…';
+  const r = await api.duckdns({ sub: $('duckSub').value, token: $('duckToken').value });
+  $('duckMsg').textContent = r.ok ? `✓ ${r.host} artık senin genel IP'ne bağlı. Arkadaşlarına bunu ver.` : 'Hata: ' + r.error;
+  save(); updateAddr();
+};
+
 (async () => {
   $('dir').value = saved.dir || (await api.defaultDir());
+  try { await loadNet(); } catch (e) { log('[HATA] ' + e.message + '\n'); }
   fields.forEach((f) => { if (saved[f] !== undefined) $(f).value = saved[f]; });
+  updateAddr();
   if (saved.onlineMode !== undefined) $('onlineMode').checked = saved.onlineMode;
   if (saved.eula) $('eula').checked = true;
   const j = await api.java();
@@ -89,7 +125,8 @@ $('start').onclick = async () => {
   document.querySelector('[data-tab=console]').click();
   const r = await api.start({
     dir: $('dir').value, ram: $('ram').value, port: $('port').value, maxPlayers: $('maxPlayers').value,
-    motd: $('motd').value, gamemode: $('gamemode').value, difficulty: $('difficulty').value, onlineMode: $('onlineMode').checked
+    motd: $('motd').value, gamemode: $('gamemode').value, difficulty: $('difficulty').value, onlineMode: $('onlineMode').checked,
+    serverIp: $('serverIp').value, duckSub: $('duckSub').value, duckToken: $('duckToken').value
   });
   if (!r.ok) log('[HATA] ' + r.error + '\n');
 };
